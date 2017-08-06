@@ -1,7 +1,9 @@
 #include <cstdint>
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include "fmt/tree.hpp"
 
 #define FMT_LEVEL_TERMINATOR '+'
 #define FMT_LEVEL_BAR '|'
@@ -23,7 +25,7 @@ namespace fmt
 
 inline void iprintf(uint32_t indent, const char* fmt, ...)
 {
-    char fullFormat[strlen(fmt) + indent + 1];
+    char* fullFormat = (char*)alloca(strlen(fmt) + indent + 1);
     std::memset(fullFormat, ' ', indent);
     std::strcpy(fullFormat + indent, fmt);
 
@@ -35,7 +37,7 @@ inline void iprintf(uint32_t indent, const char* fmt, ...)
 
 inline void ifprintf(FILE* file, uint32_t indent, const char* fmt, ...)
 {
-    char fullFormat[strlen(fmt) + indent + 1];
+    char* fullFormat = (char*)alloca(strlen(fmt) + indent + 1);
     std::memset(fullFormat, ' ', indent);
     std::strcpy(fullFormat + indent, fmt);
 
@@ -56,17 +58,16 @@ inline void tprintf(uint32_t level, uint32_t shiftPerLevel, const char* fmt, ...
         return;
     }
 
-    char fullFormat[strlen(fmt) + formatPreambleSize + 1];
+    char* fullFormat = (char*)alloca(strlen(fmt) + formatPreambleSize + 1);
     std::memset(fullFormat, FMT_LEVEL_FILL, formatPreambleSize);
     std::strcpy(fullFormat + formatPreambleSize, fmt);
 
     // Write the bars.
-    //uint32_t i = 0;
-    //for (; i != lastBar; i += shiftPerLevel)
-    //    fullFormat[i] = '|';
+    uint32_t lastBar = formatPreambleSize-shiftPerLevel;
+    for (uint32_t i = 0; i != lastBar; i += shiftPerLevel)
+        fullFormat[i] = '|';
 
     // Fill in the tail end with the bend and the leading dashes.
-    uint32_t lastBar = formatPreambleSize-shiftPerLevel;
     fullFormat[lastBar] = FMT_LEVEL_BAR;
     std::memset(&fullFormat[lastBar + 1], '-', shiftPerLevel-1);
 
@@ -87,18 +88,17 @@ inline void tfprintf(FILE* file, uint32_t level, uint32_t shiftPerLevel, const c
         return;
     }
 
-    char fullFormat[strlen(fmt) + formatPreambleSize + 1];
+    char* fullFormat = (char*)alloca(strlen(fmt) + formatPreambleSize + 1);
     std::memset(fullFormat, FMT_LEVEL_FILL, formatPreambleSize);
     std::strcpy(fullFormat + formatPreambleSize, fmt);
 
     // Write the bars.
     uint32_t lastBar = formatPreambleSize-shiftPerLevel;
-    uint32_t i = 0;
-    for (; i != lastBar; i += shiftPerLevel)
+    for (uint32_t i = 0; i != lastBar; i += shiftPerLevel)
         fullFormat[i] = '|';
 
     // Fill in the tail end with the bend and the leading dashes.
-    fullFormat[i] = FMT_LEVEL_BAR;
+    fullFormat[lastBar] = FMT_LEVEL_BAR;
     std::memset(&fullFormat[lastBar + 1], '-', shiftPerLevel-1);
 
     va_list vlist;
@@ -118,18 +118,16 @@ inline void tprintf_last(uint32_t level, uint32_t shiftPerLevel, const char* fmt
         return;
     }
 
-    char fullFormat[strlen(fmt) + formatPreambleSize + 1];
+    char* fullFormat = (char*)alloca(strlen(fmt) + formatPreambleSize + 1);
     std::memset(fullFormat, FMT_LEVEL_FILL, formatPreambleSize);
     std::strcpy(fullFormat + formatPreambleSize, fmt);
 
     // Write the bars.
-    //uint32_t lastBar = formatPreambleSize-shiftPerLevel;
-    //uint32_t i = 0;
-    //for (; i != lastBar; i += shiftPerLevel)
-    //    fullFormat[i] = '|';
+    uint32_t lastBar = formatPreambleSize-shiftPerLevel;
+    for (uint32_t i = 0; i != lastBar; i += shiftPerLevel)
+        fullFormat[i] = '|';
 
     // Fill in the tail end with the bend and the leading dashes.
-    uint32_t lastBar = formatPreambleSize-shiftPerLevel;
     fullFormat[lastBar] = FMT_LEVEL_TERMINATOR;
     std::memset(&fullFormat[lastBar + 1], '-', shiftPerLevel-1);
 
@@ -150,7 +148,7 @@ inline void tfprintf_last(FILE* file, uint32_t level, uint32_t shiftPerLevel, co
         return;
     }
 
-    char fullFormat[strlen(fmt) + formatPreambleSize + 1];
+    char* fullFormat = (char*)alloca(strlen(fmt) + formatPreambleSize + 1);
     std::memset(fullFormat, FMT_LEVEL_FILL, formatPreambleSize);
     std::strcpy(fullFormat + formatPreambleSize, fmt);
 

@@ -1,25 +1,26 @@
 #include <cstdlib>
 #include <fmt/fmt.hpp>
 
-void print_tree(uint32_t level = 0, uint32_t shift = 4)
+int main()
 {
-    if (level == 5) return;
-    if (level == 0) {
-        fmt::tprintf(level, shift, "Test\n");
-        print_tree(level + 1, shift);
-        return;
-    }
+    fmt::TreeSettings settings;
+    settings.bar = '|';
+    settings.elbow = '+';
+    settings.shift = 4;
 
-    uint32_t nextLevel = level;
-    fmt::tprintf(nextLevel, shift, "Test\n");
-    fmt::tprintf(nextLevel, shift, "Test\n");
-    fmt::tprintf(nextLevel, shift, "Test\n");
-    fmt::tprintf_last(nextLevel, shift, "Test\n");
-    print_tree(level + 1, shift);
-}
+    fmt::Tree tree(settings);
 
-int main(int argc, char* argv[])
-{
-    print_tree();
+    tree.printf_root("Root\n");
+    tree.printf_level(1, "Test\n");
+    tree.printf_level(2, "Test\n");
+    tree.printf_last(2, "Test\n");
+    tree.printf_level(1, "Test\n");
+    tree.printf_level(2, "Test\n");
+    tree.printf_last(2, "Test\n");
+    tree.printf_last(1, "Test\n");
+    tree.printf_level(2, "Test\n");
+    tree.printf_level(2, "Test\n");
+    tree.printf_last(2, "Test\n");
+
     return EXIT_SUCCESS;
 }
