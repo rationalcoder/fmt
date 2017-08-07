@@ -20,13 +20,8 @@ struct TreeSettings
 class Tree
 {
 public:
-    Tree(const TreeSettings& settings)
-        : settings_(settings)
-    {}
-
-    Tree()
-        : settings_()
-    {}
+    Tree(const TreeSettings& settings) : settings_(settings) {}
+    Tree() : settings_() {}
 
 public:
     void printf_root(const char* fmt, ...);
@@ -36,6 +31,14 @@ public:
     void fprintf_root(FILE* file, const char* fmt, ...);
     void fprintf_level(FILE* file, uint32_t level, const char* fmt, ...);
     void fprintf_last(FILE* file, uint32_t level, const char* fmt, ...);
+
+    void vprintf_root(const char* fmt, va_list list);
+    void vprintf_level(uint32_t level, const char* fmt, va_list list);
+    void vprintf_last(uint32_t level, const char* fmt, va_list list);
+
+    void vfprintf_root(FILE* file, const char* fmt, va_list list);
+    void vfprintf_level(FILE* file, uint32_t level, const char* fmt, va_list list);
+    void vfprintf_last(FILE* file, uint32_t level, const char* fmt, va_list list);
 
     TreeSettings settings() const { return settings_; }
     void set_settings(const TreeSettings& settings) { settings_ = settings; }
@@ -52,30 +55,87 @@ public:
 private:
     void resize_level_state(uint32_t level);
 
-public:
+private:
     std::vector<bool> levelTerminationState_; // true for terminated.
     TreeSettings settings_;
 };
 
 inline void Tree::printf_root(const char* fmt, ...)
 {
-    va_list vlist;
-    va_start(vlist, fmt);
-    vprintf(fmt, vlist);
-    va_end(vlist);
+    va_list argList;
+    va_start(argList, fmt);
+    vfprintf_root(stdout, fmt, argList);
+    va_end(argList);
 }
 
 inline void Tree::printf_level(uint32_t level, const char* fmt, ...)
+{
+    va_list argList;
+    va_start(argList, fmt);
+    vfprintf_level(stdout, level, fmt, argList);
+    va_end(argList);
+}
+
+inline void Tree::printf_last(uint32_t level, const char* fmt, ...)
+{
+    va_list argList;
+    va_start(argList, fmt);
+    vfprintf_last(stdout, level, fmt, argList);
+    va_end(argList);
+}
+
+inline void Tree::fprintf_root(FILE* file, const char* fmt, ...)
+{
+    va_list argList;
+    va_start(argList, fmt);
+    vfprintf_root(file, fmt, argList);
+    va_end(argList);
+}
+
+inline void Tree::fprintf_level(FILE* file, uint32_t level, const char* fmt, ...)
+{
+    va_list argList;
+    va_start(argList, fmt);
+    vfprintf_level(file, level, fmt, argList);
+    va_end(argList);
+}
+
+inline void Tree::fprintf_last(FILE* file, uint32_t level, const char* fmt, ...)
+{
+    va_list argList;
+    va_start(argList, fmt);
+    vfprintf_last(file, level, fmt, argList);
+    va_end(argList);
+}
+
+inline void Tree::vprintf_root(const char* fmt, va_list list)
+{
+    vprintf(fmt, list);
+}
+
+inline void Tree::vprintf_level(uint32_t level, const char* fmt, va_list list)
+{
+    vfprintf_level(stdout, level, fmt, list);
+}
+
+inline void Tree::vprintf_last(uint32_t level, const char* fmt, va_list list)
+{
+    vfprintf_last(stdout, level, fmt, list);
+}
+
+inline void Tree::vfprintf_root(FILE* file, const char* fmt, va_list list)
+{
+    vfprintf(file, fmt, list);
+}
+
+inline void Tree::vfprintf_level(FILE* file, uint32_t level, const char* fmt, va_list list)
 {
     resize_level_state(level);
 
     uint32_t shiftPerLevel = shift();
     uint32_t formatPreambleSize = level * shiftPerLevel;
     if (formatPreambleSize == 0) {
-        va_list vlist;
-        va_start(vlist, fmt);
-        vprintf(fmt, vlist);
-        va_end(vlist);
+        vfprintf(file, fmt, list);
         return;
     }
 
@@ -95,27 +155,20 @@ inline void Tree::printf_level(uint32_t level, const char* fmt, ...)
     fullFormat[lastBar] = bar();
     std::memset(&fullFormat[lastBar + 1], '-', shiftPerLevel-1);
 
-    va_list vlist;
-    va_start(vlist, fmt);
-    vprintf(fullFormat, vlist);
-    va_end(vlist);
+    vfprintf(file, fullFormat, list);
 
-    for (int i = level-1; i < (int)levelTerminationState_.size(); i++) {
+    for (int i = level-1; i < (int)levelTerminationState_.size(); i++)
         levelTerminationState_[i] = false;
-    }
 }
 
-inline void Tree::printf_last(uint32_t level, const char* fmt, ...)
+inline void Tree::vfprintf_last(FILE* file, uint32_t level, const char* fmt, va_list list)
 {
     resize_level_state(level);
 
     uint32_t shiftPerLevel = shift();
     uint32_t formatPreambleSize = level * shiftPerLevel;
     if (formatPreambleSize == 0) {
-        va_list vlist;
-        va_start(vlist, fmt);
-        vprintf(fmt, vlist);
-        va_end(vlist);
+        vfprintf(file, fmt, list);
         return;
     }
 
@@ -135,24 +188,9 @@ inline void Tree::printf_last(uint32_t level, const char* fmt, ...)
     fullFormat[lastBar] = elbow();
     std::memset(&fullFormat[lastBar + 1], '-', shiftPerLevel-1);
 
-    va_list vlist;
-    va_start(vlist, fmt);
-    vprintf(fullFormat, vlist);
-    va_end(vlist);
+    vfprintf(file, fullFormat, list);
 
     levelTerminationState_[level-1] = true;
-}
-
-inline void Tree::fprintf_root(FILE* file, const char* fmt, ...)
-{
-}
-
-inline void Tree::fprintf_level(FILE* file, uint32_t level, const char* fmt, ...)
-{
-}
-
-inline void Tree::fprintf_last(FILE* file, uint32_t level, const char* fmt, ...)
-{
 }
 
 inline void Tree::resize_level_state(uint32_t level)
