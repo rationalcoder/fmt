@@ -52,7 +52,7 @@ public:
 private:
     void resize_level_state(uint32_t level);
 
-private:
+public:
     std::vector<bool> levelTerminationState_; // true for terminated.
     TreeSettings settings_;
 };
@@ -85,8 +85,9 @@ inline void Tree::printf_level(uint32_t level, const char* fmt, ...)
 
     // Write the bars.
     uint32_t lastBar = formatPreambleSize-shiftPerLevel;
-    for (uint32_t i = 0; i != lastBar; i += shiftPerLevel) {
-        if (!levelTerminationState_[i])
+    uint32_t logicalBar = 0;
+    for (uint32_t i = 0; i != lastBar; i += shiftPerLevel, logicalBar++) {
+        if (!levelTerminationState_[logicalBar])
             fullFormat[i] = bar();
     }
 
@@ -98,6 +99,10 @@ inline void Tree::printf_level(uint32_t level, const char* fmt, ...)
     va_start(vlist, fmt);
     vprintf(fullFormat, vlist);
     va_end(vlist);
+
+    for (int i = level-1; i < (int)levelTerminationState_.size(); i++) {
+        levelTerminationState_[i] = false;
+    }
 }
 
 inline void Tree::printf_last(uint32_t level, const char* fmt, ...)
@@ -120,8 +125,9 @@ inline void Tree::printf_last(uint32_t level, const char* fmt, ...)
 
     // Write the bars.
     uint32_t lastBar = formatPreambleSize-shiftPerLevel;
-    for (uint32_t i = 0; i != lastBar; i += shiftPerLevel) {
-        if (!levelTerminationState_[i])
+    uint32_t logicalBar = 0;
+    for (uint32_t i = 0; i != lastBar; i += shiftPerLevel, logicalBar++) {
+        if (!levelTerminationState_[logicalBar])
             fullFormat[i] = bar();
     }
 
