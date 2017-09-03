@@ -1,2 +1,2 @@
 # fmt
-Just some useful formatted printing functions I use a lot.
+Just some useful formatted print functions that I use a lot.
